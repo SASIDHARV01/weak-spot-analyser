@@ -275,45 +275,62 @@ export default function ResultsPage() {
           </div>
 
           {/* SAFE RECOMMENDED RESOURCES BLOCK */}
-          <div className="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <ExternalLink className="w-5 h-5 text-indigo-500" /> Recommended Resources
-            </h3>
-            {resourceLinks.length > 0 ? (
-              <div className="space-y-3">
-                {resourceLinks.map((link: any, index: number) => {
-                  if (!link || (!link.url && !link.link)) return null;
+<div className="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100">
+  <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+    <ExternalLink className="w-5 h-5 text-indigo-500" /> Recommended Resources
+  </h3>
 
-                  let rawUrl = link.url || link.link || "";
-                  let cleanUrl = rawUrl;
-                  const markdownRegex = /\[.*?\]\((.*?)\)/;
-                  const match = rawUrl.match(markdownRegex);
-                  if (match && match[1]) {
-                    cleanUrl = match[1];
-                  }
+  {resourceLinks.length > 0 ? (
+    <div className="space-y-3">
+      {resourceLinks.map((link: any, index: number) => {
+        if (!link) return null;
 
-                  return (
-                    <a 
-                      key={index} 
-                      href={cleanUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="block p-4 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-200 rounded-2xl transition-all group"
-                    >
-                      <p className="text-sm font-semibold text-slate-700 group-hover:text-indigo-700 line-clamp-2">
-                        {link.title || "Resource Link"}
-                      </p>
-                      <span className="text-xs text-indigo-500 mt-2 inline-flex items-center gap-1 font-medium">
-                        Read more <ExternalLink className="w-3 h-3" />
-                      </span>
-                    </a>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500 italic">No external resources generated for this issue.</p>
-            )}
-          </div>
+        // Force URL into a safe string
+        let rawUrl = String(link.url || link.link || "").trim();
+
+        // Ignore invalid values
+        if (
+          !rawUrl ||
+          rawUrl === "undefined" ||
+          rawUrl === "[object Object]"
+        ) {
+          return null;
+        }
+
+        let cleanUrl = rawUrl;
+        const markdownRegex = /\[.*?\]\((.*?)\)/;
+
+        // Safe markdown parsing
+        const match = rawUrl.match(markdownRegex);
+        if (match?.[1]) {
+          cleanUrl = match[1];
+        }
+
+        return (
+          <a
+            key={index}
+            href={cleanUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block p-4 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-200 rounded-2xl transition-all group"
+          >
+            <p className="text-sm font-semibold text-slate-700 group-hover:text-indigo-700 line-clamp-2">
+              {link.title || "Resource Link"}
+            </p>
+
+            <span className="text-xs text-indigo-500 mt-2 inline-flex items-center gap-1 font-medium">
+              Read more <ExternalLink className="w-3 h-3" />
+            </span>
+          </a>
+        );
+      })}
+    </div>
+  ) : (
+    <p className="text-sm text-slate-500 italic">
+      No external resources generated for this issue.
+    </p>
+  )}
+</div>
           
           {/* Phase D: On-Demand Quiz Trigger */}
           <div className="bg-gradient-to-r from-indigo-600 to-violet-600 p-8 rounded-3xl text-white shadow-xl flex flex-col items-center text-center">
