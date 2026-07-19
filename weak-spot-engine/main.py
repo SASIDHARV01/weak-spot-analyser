@@ -26,7 +26,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://your-app-name.vercel.app"], # We will update the Vercel URL later
+    allow_origins=["http://localhost:3000", "https://weak-spot-analyser-murex.vercel.app"], # We will update the Vercel URL later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
