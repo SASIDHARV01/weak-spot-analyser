@@ -15,7 +15,8 @@ load_dotenv()
 supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY"))
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-app = FastAPI()
+# Add redirect_slashes=False to prevent path conflicts
+app = FastAPI(redirect_slashes=False)
 
 app.add_middleware(
     CORSMiddleware,
