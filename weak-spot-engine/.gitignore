@@ -1,0 +1,29 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+
+# Local database / temp files
+*.sqlite3
+*.db
+*.tmp
+
+# IDE / OS files
+.vscode/
+.DS_Store
+
+# Celery / Python runtime
+celerybeat-schedule
+*.pid
