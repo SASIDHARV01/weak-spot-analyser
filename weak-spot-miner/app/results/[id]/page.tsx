@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { BrainCircuit, BookOpen, Wrench, ExternalLink, ArrowLeft, Loader2, Terminal, MessageSquare, Send, User, Bot } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
 // Initialize Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,7 +32,7 @@ export default function ResultsPage() {
   const handleGenerateQuiz = async () => {
     setIsGeneratingQuiz(true);
     try {
-      const response = await fetch("http://localhost:8000/api/generate-quiz", {
+        const response = await fetch(`${API_BASE_URL}/api/generate-quiz`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ submission_id: params.id })
@@ -94,7 +95,7 @@ export default function ResultsPage() {
 
     try {
       // We will build this backend endpoint next!
-      const response = await fetch("http://localhost:8000/api/chat", {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

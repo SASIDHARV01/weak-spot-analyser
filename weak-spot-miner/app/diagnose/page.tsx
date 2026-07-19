@@ -60,15 +60,15 @@ export default function DiagnosePage() {
 
       const { data: { publicUrl } } = supabase.storage.from('error_images').getPublicUrl(filePath);
       const rawBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const API_BASE_URL = rawBaseUrl.replace(/\/$/, "");
+      const API_BASE_URL = (typeof rawBaseUrl === 'string') ? rawBaseUrl.replace(/\/$/, "") : "http://localhost:8000";
       const apiResponse = await fetch(`${API_BASE_URL}/api/analyze`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user_id: user.id,
-            file_url: publicUrl
-          })
-        });
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          file_url: publicUrl
+        })
+      });
 
       if (!apiResponse.ok) throw new Error("Backend connection failed");
 
