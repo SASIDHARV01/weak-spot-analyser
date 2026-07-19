@@ -25,7 +25,22 @@ def process_error_image(file_url: str, user_id: str):
         detected_mime_type = image_response.headers.get('Content-Type', 'image/jpeg')
         
         # 2. Prompt
-        prompt = "Analyze the coding error in this image. Return ONLY raw JSON (no markdown) with keys: weak_spot_identified, explanation, prerequisites, immediate_fix, resource_links."
+        prompt = """
+                Analyze the coding error in this image. 
+                Return ONLY a valid JSON object with these exact keys:
+                {
+                    "weak_spot_identified": "...",
+                    "explanation": "...",
+                    "prerequisites": "...",
+                    "immediate_fix": "...",
+                    "resource_links": [
+                        {
+                            "title": "Clear description of the link",
+                            "url": "https://example.com"
+                        }
+                    ]
+                }
+"""
 
         # 3. Send to Gemini
         contents = [
