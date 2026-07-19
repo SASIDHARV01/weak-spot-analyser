@@ -59,21 +59,23 @@ export default function DiagnosePage() {
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage.from('error_images').getPublicUrl(filePath);
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
+      const rawBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const API_BASE_URL = rawBaseUrl.replace(/\/$/, "");
       const apiResponse = await fetch(`${API_BASE_URL}/api/analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user.id, // Real user ID dynamically inserted
-          file_url: publicUrl
-        })
-      });
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: user.id,
+            file_url: publicUrl
+          })
+        });
 
       if (!apiResponse.ok) throw new Error("Backend connection failed");
 
       const data = await apiResponse.json();
-      setTaskId(data.task_id);
+      // ADD THIS:
+      router.push(`/results/${data.submission_id}`);
+      setIsSuccess(true);
       setIsSuccess(true);
     } catch (error) {
       console.error("Pipeline failed:", error);
@@ -81,33 +83,6 @@ export default function DiagnosePage() {
       setIsAnalyzing(false);
     }
   };
-
-  // The Polling Loop
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (isSuccess && taskId) {
-      interval = setInterval(async () => {
-        try {
-          const res = await fetch(`http://localhost:8000/api/status/${taskId}`);
-          const data = await res.json();
-
-          if (data.status === "SUCCESS") {
-            clearInterval(interval);
-            router.push(`/results/${data.result.submission_id}`);
-          } else if (data.status === "FAILURE") {
-            clearInterval(interval);
-            alert("The AI engine encountered an error.");
-            setIsSuccess(false);
-            setIsAnalyzing(false);
-          }
-        } catch (err) {
-          console.error("Polling error:", err);
-        }
-      }, 2000);
-    }
-    return () => clearInterval(interval);
-  }, [isSuccess, taskId, router]);
 
   return (
     <div className="p-8 sm:p-12 max-w-4xl mx-auto w-full">
