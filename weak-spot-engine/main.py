@@ -66,6 +66,7 @@ async def chat_tutor(payload: ChatRequest):
 @app.post("/api/generate-quiz")
 async def generate_on_demand_quiz(payload: QuizRequest):
     try:
+        # 1. Fetch the original error context
         res = supabase.table("error_submissions").select("*").eq("id", payload.submission_id).single().execute()
         if not res.data:
             return {"status": "error", "message": "Submission not found."}
@@ -73,22 +74,87 @@ async def generate_on_demand_quiz(payload: QuizRequest):
         error_context = res.data
         user_id = error_context.get("user_id")
 
-        system_context = f"Generate 3 JSON questions based on this issue: {error_context.get('weak_spot_tag')}. Fix: {error_context.get('immediate_fix')}."
+        # 2. Force Gemini to build a strict JSON structure
+        system_context = f"""
+        You are an expert technical tutor. Based on this user's specific error, generate a 5-question multiple-choice quiz to test their understanding of the core concept and the fix.
 
+        Error Context:
+        - Issue: {error_context.get('weak_spot_tag')}
+        - Fix: {error_context.get('immediate_fix')}
+        - Concept: {error_context.get('prerequisites')}
+
+        You MUST respond with ONLY a valid, raw JSON object matching this structure:
+        {{
+            "quiz_title": "Understanding {error_context.get('weak_spot_tag', 'Concept')}",
+            "questions": [
+                {{
+                    "question_text": "Clear question here?",
+                    "options": ["Option A", "Option B", "Option C", "Option D"],
+                    "correct_option": "The exact string match of the correct option",
+                    "explanation": "Why this option is correct."
+                }}
+            ]
+        }}
+        """
+
+        # 3. Call Gemini
+        print(f"--> Generating quiz for submission {payload.submission_id}...")
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=system_context,
             config=types.GenerateContentConfig(response_mime_type="application/json")
         )
         
-        quiz_data = json.loads(response.text)
+        raw_data = json.loads(response.text)
         
-        # Save to DB logic
-        db_quiz_data = {"user_id": user_id, "error_submission_id": payload.submission_id, "title": quiz_data.get("quiz_title", "Practice")}
+        # Safe Object normalization structure check
+        quiz_data = {}
+        questions_list = []
+        
+        if isinstance(raw_data, list):
+            # If Gemini ignored the shell object and generated just a raw list of questions
+            questions_list = raw_data
+            quiz_data["quiz_title"] = f"Practice: {error_context.get('weak_spot_tag', 'Targeted Review')}"
+        elif isinstance(raw_data, dict):
+            quiz_data = raw_data
+            questions_list = raw_data.get("questions", [])
+        else:
+            raise ValueError("Unexpected JSON payload format received from model engine.")
+
+        # 4. Save to Supabase
+        # Insert Master Quiz Record
+        db_quiz_data = {
+            "user_id": user_id,
+            "error_submission_id": payload.submission_id,
+            "title": quiz_data.get("quiz_title", "Targeted Practice Review")
+        }
         quiz_res = supabase.table("quizzes").insert(db_quiz_data).execute()
         
-        return {"status": "success", "quiz_id": quiz_res.data[0]['id']}
+        if not quiz_res.data or len(quiz_res.data) == 0:
+            raise Exception("Failed to record parent quiz transaction entry.")
+            
+        quiz_id = quiz_res.data[0]['id']
+
+        # Clean and format Individual Questions entries
+        db_questions = []
+        for q in questions_list:
+            if isinstance(q, dict):
+                db_questions.append({
+                    "quiz_id": quiz_id,
+                    "question_text": q.get("question_text", "Review Question"),
+                    "options": q.get("options", []),
+                    "correct_option": q.get("correct_option", ""),
+                    "explanation": q.get("explanation", "")
+                })
+        
+        if db_questions:
+            supabase.table("quiz_questions").insert(db_questions).execute()
+
+        print(f"--> [SUCCESS] Quiz {quiz_id} generated and saved dynamically!")
+        return {"status": "success", "quiz_id": quiz_id}
+
     except Exception as e:
+        print(f"--> [QUIZ ERROR] Failed to generate quiz: {str(e)}")
         return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
