@@ -15,10 +15,11 @@ from supabase import create_client, Client
 load_dotenv()
 
 # Initialize Celery
+# Change your Celery initialization to this:
 celery_app = Celery(
     "weak_spot_worker",
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0"
+    broker=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+    backend=os.getenv("REDIS_URL", "redis://localhost:6379/0")
 )
 
 # Initialize API Clients
