@@ -5,7 +5,6 @@ import { BrainCircuit, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
-// Initialize Supabase Client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -26,24 +25,20 @@ export default function LoginPage() {
 
     try {
       if (isLogin) {
-        // Log In Existing User
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
         
-        // Success! Go to dashboard
         router.push("/");
       } else {
-        // Sign Up New User
         const { error } = await supabase.auth.signUp({
           email,
           password,
         });
         if (error) throw error;
 
-        // Success! Go to dashboard
         router.push("/");
       }
     } catch (err: any) {

@@ -5,11 +5,9 @@ import { useParams, useRouter } from "next/navigation";
 import { BrainCircuit, BookOpen, Wrench, ExternalLink, ArrowLeft, Loader2, Terminal, MessageSquare, Send, User, Bot } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
-// Safe API URL initialization configuration
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const API_BASE_URL = (typeof rawApiUrl === 'string') ? rawApiUrl.replace(/\/$/, "") : "http://localhost:8000";
 
-// Initialize Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -21,7 +19,6 @@ export default function ResultsPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Chat State
   const [chatMessages, setChatMessages] = useState<{role: string, content: string}[]>([
     { role: 'assistant', content: "I've analyzed your error. Do you have any questions about the fix or the core concepts?" }
   ]);
@@ -29,7 +26,6 @@ export default function ResultsPage() {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Quiz Generation State
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
 
   const handleGenerateQuiz = async () => {
@@ -81,7 +77,6 @@ export default function ResultsPage() {
     fetchResults();
   }, [params.id, router]);
 
-  // Auto-scroll chat to bottom
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
@@ -128,7 +123,6 @@ export default function ResultsPage() {
 
   if (!data) return <div className="p-12 text-center text-slate-800 font-bold">Result not found</div>;
 
-  // --- COMPREHENSIVE PARSING FOR RESOURCE LINKS ---
   let resourceLinks: any[] = [];
   try {
     if (data && data.resource_links) {

@@ -19,24 +19,20 @@ export default function DashboardOverview() {
 
     useEffect(() => {
     async function fetchDashboardData() {
-      // 1. Check who is currently logged in
       const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-      // 2. Security Check: If no user is logged in, boot them to the login page!
       if (authError || !user) {
         window.location.href = "/login";
         return;
       }
 
-      // 3. Fetch ONLY the data that belongs to the logged-in user
       const { data, error } = await supabase
         .from("error_submissions")
         .select("*")
-        .eq("user_id", user.id) // <--- Using the real user ID now!
+        .eq("user_id", user.id) 
         .order("created_at", { ascending: false });
 
       if (!error && data) {
-        // Calculate Top Stats
         const uniqueSpots = new Set(data.map(item => item.weak_spot_identified)).size;
         setStats({
           total: data.length,
@@ -44,10 +40,8 @@ export default function DashboardOverview() {
           mastered: data.length > 0 ? Math.floor(data.length * 0.8) : 0,
         });
 
-        // Get Recent Activity (Top 3)
         setRecentActivity(data.slice(0, 3));
 
-        // Process Chart Data (Last 7 Days)
         const last7Days = [...Array(7)].map((_, i) => {
           const d = new Date();
           d.setDate(d.getDate() - i);

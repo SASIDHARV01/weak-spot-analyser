@@ -25,12 +25,10 @@ export default function Sidebar() {
     { name: "History Logs", href: "/history", icon: History },
   ];
 
-  // Fetch the real user when the sidebar mounts
   useEffect(() => {
     async function fetchUser() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user && user.email) {
-        // Extract the name from the email (e.g., "john.doe@gmail.com" -> "john.doe")
         const emailName = user.email.split('@')[0];
         setDisplayName(emailName);
         setInitials(emailName.substring(0, 2).toUpperCase());

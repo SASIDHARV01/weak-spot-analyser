@@ -23,11 +23,9 @@ export default function QuizPage() {
   
   useEffect(() => {
     async function fetchQuiz() {
-      // 1. Fetch Quiz Header
       const { data: quizData } = await supabase.from("quizzes").select("*").eq("id", params.id).single();
       setQuiz(quizData);
 
-      // 2. Fetch Questions
       const { data: questionData } = await supabase.from("quiz_questions").select("*").eq("quiz_id", params.id);
       setQuestions(questionData || []);
     }

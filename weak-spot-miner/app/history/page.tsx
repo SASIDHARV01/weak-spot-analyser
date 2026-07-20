@@ -14,7 +14,7 @@ export default function HistoryPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 1. Fetch the user's history when the page loads
+
   useEffect(() => {
     async function fetchHistory() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -40,11 +40,8 @@ export default function HistoryPage() {
     fetchHistory();
   }, []);
 
-  // 2. The Delete Function
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.preventDefault(); 
-    
-    // Optimistic UI update: Remove it from the screen instantly
     setLogs((prevLogs) => prevLogs.filter((log) => log.id !== id));
 
     const { error } = await supabase

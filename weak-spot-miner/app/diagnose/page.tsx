@@ -19,7 +19,7 @@ export default function DiagnosePage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [taskId, setTaskId] = useState<string | null>(null);
 
-  // Drag & Drop Handlers
+
   const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); };
   const handleDrop = (e: React.DragEvent) => {
@@ -31,9 +31,8 @@ export default function DiagnosePage() {
     if (e.target.files && e.target.files.length > 0) setSelectedFile(e.target.files[0]);
   };
 
-  // Webcam Capture Handler
+
   const handleCameraCapture = (file: File) => {
-    // Automatically set the captured picture as the file to be analyzed
     setSelectedFile(file);
   };
 
@@ -42,7 +41,6 @@ export default function DiagnosePage() {
     setIsAnalyzing(true);
 
     try {
-      // 1. Grab the real logged-in user from Supabase
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {

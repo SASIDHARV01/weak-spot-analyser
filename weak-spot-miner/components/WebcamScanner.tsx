@@ -8,7 +8,6 @@ export default function WebcamScanner({ onCapture }: { onCapture: (file: File) =
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Starts the laptop webcam stream
   const startCamera = async () => {
     setIsCameraOpen(true);
     try {
@@ -25,7 +24,6 @@ export default function WebcamScanner({ onCapture }: { onCapture: (file: File) =
     }
   };
 
-  // Stops the stream and turns off the hardware camera light
   const stopCamera = useCallback(() => {
     if (videoRef.current && videoRef.current.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
@@ -36,25 +34,22 @@ export default function WebcamScanner({ onCapture }: { onCapture: (file: File) =
     setIsCameraOpen(false);
   }, []);
 
-  // Snaps the picture from the video feed
   const takeSnapshot = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       
-      // Set canvas dimensions to match the video stream
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       
       const context = canvas.getContext("2d");
       if (context) {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        // Convert the canvas image to a File object
+      
         canvas.toBlob((blob) => {
           if (blob) {
             const file = new File([blob], "webcam-scan.jpg", { type: "image/jpeg" });
-            onCapture(file); // Pass the file back to the parent component
+            onCapture(file); 
             stopCamera();
           }
         }, "image/jpeg", 0.9);
